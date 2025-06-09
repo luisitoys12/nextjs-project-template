@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://trabulluser:trabullpass@db:5432/trabulldb
+      - JWT_SECRET=your_jwt_secret_key
+    depends_on:
+      - db
+      - rtmp
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: trabulluser
+      POSTGRES_PASSWORD: trabullpass
+      POSTGRES_DB: trabulldb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rtmp:
+    image: tiangolo/nginx-rtmp
+    ports:
+      - "1935:1935"  # RTMP
+      - "8080:8080"  # HTTP (for HLS)
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - stream_data:/var/www/stream
+
+volumes:
+  postgres_data:
+  stream_data:
